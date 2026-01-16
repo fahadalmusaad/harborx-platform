@@ -1,5 +1,8 @@
 name: HarborX AI Dev Bot
 
+permissions:
+  contents: write
+
 on:
   push:
     paths:
