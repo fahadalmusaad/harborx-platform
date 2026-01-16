@@ -30,12 +30,17 @@ const pilotShipments = [
 
 // GET shipments (role-based)
 app.get("/api/shipments", (req, res) => {
-  const role = req.headers["x-role"];
-  const name = req.headers["x-name"];
+  const role = 
+    req.headers['role'] ||
+    req.query.role;
+
+  const name = 
+    req.headers['name'] ||
+    req.query.name;
 
   if (!role || !name) {
     return res.status(400).json({
-      error: "Missing role or name in headers"
+      error: "Missing role or name in (headers or query)'
     });
   }
 
