@@ -44,11 +44,33 @@ const req = https.request(options, res => {
   let data = "";
   res.on("data", chunk => (data += chunk));
   res.on("end", () => {
-    const response = JSON.parse(data);
-    fs.writeFileSync(".ai/output.txt", response.choices[0].message.content);
-    console.log("AI output written to .ai/output.txt");
+    try {
+      const response = JSON.parse(data);
+
+      if (!response.choices) {
+        fs.writeFileSync(
+          ".ai/output.txt",
+          "AI response error:\n" + JSON.stringify(response, null, 2)
+        );
+        console.log("AI returned error response");
+        process.exit(0); // ⬅️ مهم جدًا
+      }
+
+      fs.writeFileSync(
+        ".ai/output.txt",
+        response.choices[0].message.content
+      );
+      console.log("AI output written to .ai/output.txt");
+
+    } catch (err) {
+      fs.writeFileSync(
+        ".ai/output.txt",
+        "Failed to parse AI response:\n" + err.message
+      );
+      console.error("Parsing error:", err.message);
+      process.exit(0); // ⬅️ لا نكسر الـ pipeline
+    }
   });
-});
 
 req.on("error", err => {
   console.error("Request failed:", err);
