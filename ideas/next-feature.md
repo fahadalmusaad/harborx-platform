@@ -7,7 +7,7 @@ Feature: Pilot Shipment API
 id
 
 origin
-
+ 
 destination
 
 status
