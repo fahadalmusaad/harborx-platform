@@ -40,7 +40,7 @@ app.get("/api/shipments", (req, res) => {
 
   if (!role || !name) {
     return res.status(400).json({
-      error: "Missing role or name in (headers or query)'
+      error: "Missing role or name in (headers or query)"
     });
   }
 
