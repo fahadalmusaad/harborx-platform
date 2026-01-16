@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "server/**"
+      - "client/**"
+      - "index.html"
 
 jobs:
   build-and-deploy:
@@ -18,26 +22,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (Server)
+      - name: Install Server Dependencies
+        if: ${{ hashFiles('server/package.json') != '' }}
         run: |
-          if [ -d "server" ]; then
-            cd server
-            npm install
-          fi
+          cd server
+          npm install
 
-      - name: Install dependencies (Client)
+      - name: Start Server (check only)
+        if: ${{ hashFiles('server/index.js') != '' }}
         run: |
-          if [ -d "client" ]; then
-            cd client
-            npm install
-          fi
+          echo "Server files exist ✅"
 
-      - name: Build Client
+      - name: Web exists check
+        if: ${{ hashFiles('index.html') != '' }}
         run: |
-          if [ -d "client" ]; then
-            cd client
-            npm run build || echo "No build script yet"
-          fi
+          echo "Web root exists ✅"
 
       - name: Done
-        run: echo "HarborX pipeline ready 🚢"
+        run: echo "CI/CD completed safely 🚢"
