@@ -13,15 +13,29 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Read idea
-        run: |
-          echo "📌 IDEA CONTENT:"
-          cat ideas/next-feature.md
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Placeholder AI Step
+      - name: Install AI deps
         run: |
-          echo "🤖 AI will generate code here in next step"
+          npm install node-fetch@3
 
-      - name: Commit changes (future)
+      - name: Run AI Generator
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          echo "No code generated yet"
+          node .ai/generate-feature.js
+
+      - name: Show AI Output
+        run: |
+          cat .ai/output.txt
+
+      - name: Commit AI changes (placeholder)
+        run: |
+          git config user.name "HarborX AI Bot"
+          git config user.email "ai@harborx.dev"
+          git add .
+          git commit -m "ai: generate feature from idea" || echo "No changes"
+          git push
