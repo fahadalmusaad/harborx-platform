@@ -1,0 +1,27 @@
+name: HarborX AI Dev Bot
+
+on:
+  push:
+    paths:
+      - "ideas/**"
+
+jobs:
+  ai-generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Read idea
+        run: |
+          echo "📌 IDEA CONTENT:"
+          cat ideas/next-feature.md
+
+      - name: Placeholder AI Step
+        run: |
+          echo "🤖 AI will generate code here in next step"
+
+      - name: Commit changes (future)
+        run: |
+          echo "No code generated yet"
