@@ -1,29 +1,34 @@
 const fs = require("fs");
 const https = require("https");
 
-// ensure .ai directory exists
-if (!fs.existsSync(".ai")) {
-  fs.mkdirSync(".ai");
-}
-
 const idea = fs.readFileSync("ideas/next-feature.md", "utf-8");
+const serverPath = "server/index.js";
+const markerStart = "// === AI ROUTES START ===";
+const markerEnd = "// === AI ROUTES END ===";
+
+const serverCode = fs.readFileSync(serverPath, "utf-8");
 
 const payload = JSON.stringify({
   model: "gpt-4.1-mini",
   messages: [
     {
+      role: "system",
+      content: "You are a senior backend engineer. Output ONLY JavaScript Express routes."
+    },
+    {
       role: "user",
       content: `
-You are a senior backend engineer.
-Project: HARBORX (logistics SaaS).
-
-Generate ONLY Express.js code for this feature.
-Do NOT explain.
-Return code only.
+Add new Express.js routes for this feature.
+Rules:
+- ONLY routes (app.get / app.post)
+- No explanations
+- No imports
+- No server listen
+- Idempotent (do not duplicate routes)
 
 Feature:
 ${idea}
-      `
+`
     }
   ],
   temperature: 0.2
@@ -46,35 +51,36 @@ const req = https.request(options, res => {
   res.on("end", () => {
     try {
       const response = JSON.parse(data);
+      if (!response.choices) return;
 
-      if (!response.choices) {
-        fs.writeFileSync(
-          ".ai/output.txt",
-          "AI response error:\n" + JSON.stringify(response, null, 2)
-        );
-        console.log("AI returned error response");
-        process.exit(0); // ⬅️ مهم جدًا
-      }
+      const aiRoutes = response.choices[0].message.content.trim();
+      if (!aiRoutes) return;
 
-      fs.writeFileSync(
-        ".ai/output.txt",
-        response.choices[0].message.content
-      );
-      console.log("AI output written to .ai/output.txt");
+      const before = serverCode.split(markerStart)[0];
+      const middle = serverCode.split(markerStart)[1].split(markerEnd)[0];
+      const after = serverCode.split(markerEnd)[1];
 
-    } catch (err) {
-      fs.writeFileSync(
-        ".ai/output.txt",
-        "Failed to parse AI response:\n" + err.message
-      );
-      console.error("Parsing error:", err.message);
-      process.exit(0); // ⬅️ لا نكسر الـ pipeline
+      if (middle.includes(aiRoutes)) return;
+
+      const updated =
+        before +
+        markerStart +
+        "\n" +
+        middle.trim() +
+        "\n" +
+        aiRoutes +
+        "\n" +
+        markerEnd +
+        after;
+
+      fs.writeFileSync(serverPath, updated);
+      console.log("AI routes injected into server/index.js");
+    } catch (e) {
+      console.error("AI injection failed safely");
     }
   });
-
-req.on("error", err => {
-  console.error("Request failed:", err);
 });
 
+req.on("error", () => {});
 req.write(payload);
 req.end();
