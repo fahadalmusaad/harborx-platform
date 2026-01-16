@@ -1,34 +1,48 @@
 import fs from "fs";
-import fetch from "node-fetch";
+import https from "https";
 
 const idea = fs.readFileSync("ideas/next-feature.md", "utf-8");
 
-const prompt = `
-You are a senior full-stack engineer.
-Project name: HARBORX (logistics SaaS).
+const payload = JSON.stringify({
+  model: "gpt-4.1-mini",
+  messages: [
+    {
+      role: "user",
+      content: `
+You are a senior backend engineer.
+Project: HARBORX (logistics SaaS).
 
-Generate production-ready code changes based on this feature request.
-Return ONLY code blocks with file paths.
+Generate ONLY Express.js code for this feature.
+Do NOT explain. Return code only.
 
-Feature request:
+Feature:
 ${idea}
-`;
+      `
+    }
+  ],
+  temperature: 0.2
+});
 
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
+const options = {
+  hostname: "api.openai.com",
+  path: "/v1/chat/completions",
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-  },
-  body: JSON.stringify({
-    model: "gpt-4.1-mini",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.2
-  })
+    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Content-Length": payload.length
+  }
+};
+
+const req = https.request(options, res => {
+  let data = "";
+  res.on("data", chunk => (data += chunk));
+  res.on("end", () => {
+    const response = JSON.parse(data);
+    fs.writeFileSync(".ai/output.txt", response.choices[0].message.content);
+    console.log("AI output generated");
+  });
 });
 
-const data = await response.json();
-
-fs.writeFileSync(".ai/output.txt", data.choices[0].message.content);
-
-console.log("AI output generated");
+req.write(payload);
+req.end();
