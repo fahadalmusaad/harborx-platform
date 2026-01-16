@@ -28,5 +28,13 @@ jobs:
         run: |
           node .ai/generate-feature.js || true
 
+      - name: Commit AI code
+        run: |
+          git config user.name "HarborX AI Bot"
+          git config user.email "ai@harborx.dev"
+          git add server/index.js
+          git commit -m "ai: add backend routes from idea" || true
+          git push
+
       - name: Always succeed
         run: echo "AI job finished safely 🚢"
