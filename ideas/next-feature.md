@@ -1,16 +1,8 @@
-Feature: Pilot Shipment API
-أضف API endpoint بسيط في HARBORX يعيد قائمة شحنات Pilot وهمية.
-المسار: GET /api/shipments
+أضف API endpoint:
+GET /api/shipments
 
-كل شحنة تحتوي:
+يعيد قائمة شحنات Pilot:
 
-id
+PILOT-001 من Shanghai إلى Jeddah (In Transit)
 
-origin
- 
-destination
-   
-status
-
-الرد يكون JSON.
- 
+PILOT-002 من Ningbo إلى Dammam (Booked)
