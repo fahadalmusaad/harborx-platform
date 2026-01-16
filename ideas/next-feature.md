@@ -1,8 +1,23 @@
-أضف API endpoint:
-GET /api/shipments
+الميزة: إدارة شحنات Pilot
 
-يعيد قائمة شحنات Pilot:
+الدور: مستورد
 
-PILOT-001 من Shanghai إلى Jeddah (In Transit)
+السلوك:
 
-PILOT-002 من Ningbo إلى Dammam (Booked)
+المستورد ينشئ طلب شحنة FCL
+
+يختار ميناء التحميل Shanghai
+
+ميناء التنزيل Jeddah
+
+النظام ينشئ رقم شحنة تلقائي
+
+الحالة الابتدائية:
+
+CREATED
+
+ما يجب أن يراه المستورد:
+
+قائمة شحناته
+
+حالة كل شحنة
