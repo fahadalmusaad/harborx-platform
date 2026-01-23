@@ -2,6 +2,30 @@
 
 Modern freight management platform for the Middle East, built with a microservices architecture.
 
+## 📊 Architecture Status
+
+**Current State:** ✅ Development/Staging Ready | ⚠️ Production Hardening Required
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Architecture | ✅ Complete | Microservices with API Gateway |
+| Security Scanning | ✅ Complete | CodeQL, Dependabot configured |
+| CI/CD | ✅ Complete | Automated testing & builds |
+| Authentication | ⚠️ Stub Only | Requires production implementation |
+| Rate Limiting | ❌ Missing | Critical for production |
+| Testing | ❌ Minimal | No unit/integration tests |
+| Monitoring | ❌ Basic | Health checks only |
+
+**Production Readiness: ~40%** - See [Production Readiness Checklist](docs/PRODUCTION_READINESS.md)
+
+### Validate Architecture
+
+Run automated architecture validation:
+
+```bash
+./scripts/validate-architecture.sh
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -295,9 +319,13 @@ netstat -ano | findstr :[PORT]  # Windows
 ## 📚 Documentation
 
 - [Architecture Decision Records](docs/adr/)
-- [Database README](packages/db/README.md)
+  - [ADR-0001: Microservices Architecture](docs/adr/0001-architecture.md)
+  - [ADR-0002: Production Readiness Standards](docs/adr/0002-production-readiness-standards.md)
+  - [ADR-001: Render Deployment Architecture](docs/adr/001-render-deployment-architecture.md)
+- [Production Readiness Checklist](docs/PRODUCTION_READINESS.md)
 - [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)
-- [Render Deployment Architecture](docs/adr/001-render-deployment-architecture.md)
+- [Security Documentation](SECURITY.md)
+- [Database README](packages/db/README.md)
 
 ## 🤝 Contributing
 
