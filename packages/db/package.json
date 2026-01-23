@@ -1,0 +1,24 @@
+{
+  "name": "@harborx/db",
+  "version": "0.1.0",
+  "description": "HarborX Database Schema and Migrations",
+  "main": "index.js",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:seed": "node seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@prisma/client": "^5.8.0",
+    "prisma": "^5.8.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.0"
+  }
+}
