@@ -1,6 +1,66 @@
 version: 2
 updates:
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Frontend (Next.js)
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "frontend"
+    open-pull-requests-limit: 10
+
+  # Database (Prisma)
+  - package-ecosystem: "npm"
+    directory: "/packages/db"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "database"
+
+  # Auth Service (Python)
+  - package-ecosystem: "pip"
+    directory: "/services/auth"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "security"
+
+  # Core Service (Python)
+  - package-ecosystem: "pip"
+    directory: "/services/core"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # Gateway Service (Python)
+  - package-ecosystem: "pip"
+    directory: "/services/gateway"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
