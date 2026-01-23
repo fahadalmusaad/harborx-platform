@@ -1,0 +1,147 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: harborx-postgres
+    environment:
+      POSTGRES_USER: harborx
+      POSTGRES_PASSWORD: harborx_dev_password
+      POSTGRES_DB: harborx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harborx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - harborx-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: harborx-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - harborx-network
+
+  # Auth Service
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: harborx-auth
+    environment:
+      - DATABASE_URL=postgresql://harborx:harborx_dev_password@postgres:5432/harborx?schema=public
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=your-secret-key-change-in-production-min-32-chars-long
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ENVIRONMENT=development
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - harborx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Core Service
+  core:
+    build:
+      context: ./services/core
+      dockerfile: Dockerfile
+    container_name: harborx-core
+    environment:
+      - DATABASE_URL=postgresql://harborx:harborx_dev_password@postgres:5432/harborx?schema=public
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=your-secret-key-change-in-production-min-32-chars-long
+      - JWT_ALGORITHM=HS256
+      - ENVIRONMENT=development
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - harborx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: harborx-gateway
+    environment:
+      - AUTH_SERVICE_URL=http://auth:8001
+      - CORE_SERVICE_URL=http://core:8002
+      - FRONTEND_URL=http://localhost:3000
+      - JWT_SECRET=your-secret-key-change-in-production-min-32-chars-long
+      - JWT_ALGORITHM=HS256
+      - ENVIRONMENT=development
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth
+      - core
+    networks:
+      - harborx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Next.js Web Frontend
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    container_name: harborx-web
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+    networks:
+      - harborx-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  harborx-network:
+    driver: bridge
