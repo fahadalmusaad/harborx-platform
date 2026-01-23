@@ -16,9 +16,12 @@ app = FastAPI(
 )
 
 # CORS Configuration
+# SECURITY NOTE: In production, replace "*" with specific allowed origins
+# Example: allow_origins=["https://app.harborx.com", "https://admin.harborx.com"]
+cors_origins = settings.cors_origins if hasattr(settings, 'cors_origins') else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,15 +45,18 @@ async def login(request: LoginRequest):
     """
     Login endpoint - Returns JWT token.
     
-    TODO: Implement actual authentication against database.
-    Currently returns a stub token for development.
-    """
-    logger.info(f"Login attempt for email: {request.email}")
+    ⚠️ SECURITY WARNING: This is a stub implementation for development only!
     
-    # TODO: Implement actual authentication
-    # 1. Query user from database
-    # 2. Verify password
-    # 3. Generate JWT token
+    TODO: Before production deployment, implement:
+    1. Query user from database by email
+    2. Verify password hash using passlib
+    3. Rate limiting to prevent brute force attacks
+    4. Account lockout after failed attempts
+    5. Audit logging of authentication attempts
+    
+    DO NOT deploy to production without proper authentication!
+    """
+    logger.warning(f"⚠️ Using stub authentication for development: {request.email}")
     
     # Stub response for development
     from security import create_access_token
@@ -71,13 +77,17 @@ async def get_current_user():
     """
     Get current user information.
     
-    TODO: Implement actual user retrieval from JWT token.
-    Currently returns stub data for development.
+    ⚠️ SECURITY WARNING: This is a stub implementation for development only!
+    
+    TODO: Before production deployment, implement:
+    1. Extract JWT token from Authorization header
+    2. Verify token signature and expiration
+    3. Query user from database using token payload
+    4. Return actual user information
+    
+    DO NOT deploy to production without proper authentication!
     """
-    # TODO: Implement actual user retrieval
-    # 1. Extract and verify JWT token from Authorization header
-    # 2. Query user from database
-    # 3. Return user information
+    logger.warning("⚠️ Using stub /me endpoint without authentication")
     
     # Stub response for development
     return UserMeResponse(

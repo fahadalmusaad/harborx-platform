@@ -32,9 +32,12 @@ app = FastAPI(
 )
 
 # CORS Configuration
+# SECURITY NOTE: In production, replace "*" with specific allowed origins
+# Example: allow_origins=["https://app.harborx.com", "https://admin.harborx.com"]
+cors_origins = settings.cors_origins if hasattr(settings, 'cors_origins') else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

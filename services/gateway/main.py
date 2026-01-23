@@ -16,9 +16,19 @@ app = FastAPI(
 )
 
 # CORS Configuration
+# Allow gateway and frontend origins
+# SECURITY: Use environment variables for production origins
+cors_origins = [
+    settings.frontend_url,
+    "http://localhost:3000",  # Local development
+]
+# Add additional origins from environment if configured
+if hasattr(settings, 'cors_origins') and settings.cors_origins:
+    cors_origins.extend(settings.cors_origins.split(','))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url, "http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
