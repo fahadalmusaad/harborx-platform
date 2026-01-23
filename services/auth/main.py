@@ -16,9 +16,15 @@ app = FastAPI(
 )
 
 # CORS Configuration
-# SECURITY NOTE: In production, replace "*" with specific allowed origins
-# Example: allow_origins=["https://app.harborx.com", "https://admin.harborx.com"]
-cors_origins = settings.cors_origins if hasattr(settings, 'cors_origins') else ["*"]
+# SECURITY: Default to localhost only for development
+# Production MUST configure specific allowed origins via CORS_ORIGINS env var
+if hasattr(settings, 'cors_origins') and settings.cors_origins:
+    cors_origins = settings.cors_origins.split(',') if isinstance(settings.cors_origins, str) else settings.cors_origins
+else:
+    # Development-only default: restrict to localhost
+    cors_origins = ["http://localhost:3000", "http://localhost:8000"]
+    logger.warning("⚠️ CORS using development defaults. Set CORS_ORIGINS for production!")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -56,6 +62,14 @@ async def login(request: LoginRequest):
     
     DO NOT deploy to production without proper authentication!
     """
+    # FAIL-SAFE: Check if we're in production
+    if hasattr(settings, 'environment') and settings.environment == 'production':
+        logger.error("🚨 CRITICAL: Stub authentication called in production!")
+        raise HTTPException(
+            status_code=500,
+            detail="Authentication not properly configured for production"
+        )
+    
     logger.warning(f"⚠️ Using stub authentication for development: {request.email}")
     
     # Stub response for development
@@ -87,6 +101,14 @@ async def get_current_user():
     
     DO NOT deploy to production without proper authentication!
     """
+    # FAIL-SAFE: Check if we're in production
+    if hasattr(settings, 'environment') and settings.environment == 'production':
+        logger.error("🚨 CRITICAL: Stub /me endpoint called in production!")
+        raise HTTPException(
+            status_code=500,
+            detail="User endpoint not properly configured for production"
+        )
+    
     logger.warning("⚠️ Using stub /me endpoint without authentication")
     
     # Stub response for development

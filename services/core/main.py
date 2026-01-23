@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from schemas import ShipmentListResponse, Shipment
 from cache import cache
+from config import settings
 from datetime import datetime, timezone
 import json
 import logging
@@ -32,9 +33,15 @@ app = FastAPI(
 )
 
 # CORS Configuration
-# SECURITY NOTE: In production, replace "*" with specific allowed origins
-# Example: allow_origins=["https://app.harborx.com", "https://admin.harborx.com"]
-cors_origins = settings.cors_origins if hasattr(settings, 'cors_origins') else ["*"]
+# SECURITY: Default to localhost only for development
+# Production MUST configure specific allowed origins via CORS_ORIGINS env var
+if hasattr(settings, 'cors_origins') and settings.cors_origins:
+    cors_origins = settings.cors_origins.split(',') if isinstance(settings.cors_origins, str) else settings.cors_origins
+else:
+    # Development-only default: restrict to localhost
+    cors_origins = ["http://localhost:3000", "http://localhost:8000"]
+    logger.warning("⚠️ CORS using development defaults. Set CORS_ORIGINS for production!")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
