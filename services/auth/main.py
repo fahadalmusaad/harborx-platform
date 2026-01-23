@@ -77,14 +77,14 @@ async def get_current_user():
     # 3. Return user information
     
     # Stub response for development
-    from datetime import datetime
+    from datetime import datetime, timezone
     
     return UserMeResponse(
         id="stub-user-id",
         email="user@example.com",
         role="USER",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc)
     )
 
 

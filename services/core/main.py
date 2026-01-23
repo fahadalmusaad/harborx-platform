@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from schemas import ShipmentListResponse, Shipment
 from cache import cache
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import logging
 
@@ -10,10 +11,24 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events."""
+    # Startup
+    await cache.connect()
+    logger.info("Core service started")
+    yield
+    # Shutdown
+    await cache.disconnect()
+    logger.info("Core service stopped")
+
+
 app = FastAPI(
     title="HarborX Core Service",
     description="Core Business Logic Service",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # CORS Configuration
@@ -24,20 +39,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize connections on startup."""
-    await cache.connect()
-    logger.info("Core service started")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up connections on shutdown."""
-    await cache.disconnect()
-    logger.info("Core service stopped")
 
 
 @app.get("/health")
@@ -76,7 +77,7 @@ async def get_shipments():
             origin="Dubai, UAE",
             destination="Jeddah, Saudi Arabia",
             status="in_transit",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         ),
         Shipment(
             id="ship-002",
@@ -84,7 +85,7 @@ async def get_shipments():
             origin="Abu Dhabi, UAE",
             destination="Riyadh, Saudi Arabia",
             status="delivered",
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         ),
     ]
     

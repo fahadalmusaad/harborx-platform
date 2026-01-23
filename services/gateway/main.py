@@ -60,12 +60,19 @@ async def request_error_handler(request: Request, exc: httpx.RequestError):
 async def http_status_error_handler(request: Request, exc: httpx.HTTPStatusError):
     """Handle HTTP status errors from backend services."""
     logger.error(f"HTTP status error: {exc}")
-    return JSONResponse(
-        status_code=exc.response.status_code,
-        content=exc.response.json() if exc.response.headers.get("content-type") == "application/json" else {
+    
+    # Try to parse JSON response, fallback to generic error if not JSON
+    try:
+        error_content = exc.response.json()
+    except (ValueError, AttributeError):
+        error_content = {
             "error": "Backend Service Error",
             "message": f"Backend service returned error: {exc.response.status_code}"
         }
+    
+    return JSONResponse(
+        status_code=exc.response.status_code,
+        content=error_content
     )
 
 
