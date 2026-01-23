@@ -1,0 +1,112 @@
+# Render Blueprint for HarborX Platform
+# This file defines all services and their configuration for deployment on Render
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  # Web Service - Next.js Frontend
+  - type: web
+    name: harborx-web
+    runtime: node
+    region: oregon
+    plan: starter
+    rootDir: web
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+        # Set this in Render dashboard to point to your core service URL
+        # e.g., https://harborx-core.onrender.com
+      - key: PORT
+        value: 10000
+    autoDeploy: true
+    branch: main
+
+  # Auth Service - FastAPI Authentication
+  - type: web
+    name: harborx-auth
+    runtime: python
+    region: oregon
+    plan: starter
+    rootDir: services/auth
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET_KEY
+        generateValue: true
+        # Render will auto-generate a secure random value
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: DATABASE_URL
+        fromDatabase:
+          name: harborx-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: harborx-redis
+          property: connectionString
+      - key: CORS_ORIGINS
+        sync: false
+        # Set this in Render dashboard, e.g., https://harborx-web.onrender.com
+    autoDeploy: true
+    branch: main
+
+  # Core Service - FastAPI Business Logic
+  - type: web
+    name: harborx-core
+    runtime: python
+    region: oregon
+    plan: starter
+    rootDir: services/core
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: harborx-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: harborx-redis
+          property: connectionString
+      - key: AUTH_SERVICE_URL
+        sync: false
+        # Set this in Render dashboard to point to auth service
+        # e.g., https://harborx-auth.onrender.com
+      - key: CORS_ORIGINS
+        sync: false
+        # Set this in Render dashboard, e.g., https://harborx-web.onrender.com
+    autoDeploy: true
+    branch: main
+
+databases:
+  # PostgreSQL Database
+  - name: harborx-postgres
+    region: oregon
+    plan: starter
+    databaseName: harborx_db
+    user: harborx_user
+    ipAllowList: []  # Allow access from Render services only
+
+  # Redis Cache
+  - name: harborx-redis
+    region: oregon
+    plan: starter
+    ipAllowList: []  # Allow access from Render services only
