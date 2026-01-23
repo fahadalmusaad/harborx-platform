@@ -1,0 +1,49 @@
+name: CTO Task (Copilot)
+description: End-to-end execution task (design + implementation + tests + PR)
+title: "[CTO] "
+labels: ["cto", "copilot"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What do we want to achieve and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Clear, testable requirements (bullet points)
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints (Security / Performance / Compatibility)
+      value: |
+        - Security: no secrets; least privilege; input validation; logs must not contain sensitive data
+        - Performance: define a KPI if possible (e.g., P95 latency)
+        - i18n: Arabic/English if applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How do we verify this is done?
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        **How to run this with Copilot:**
+        1) Create the issue
+        2) Assign it to `@copilot` (and select agent `harborx-cto` if available)
+        3) Review the PR and request changes in PR comments (preferred)
+
+        **Important:** After assignment, the agent receives the issue title/body and existing comments only. Add additional info in PR comments. 
