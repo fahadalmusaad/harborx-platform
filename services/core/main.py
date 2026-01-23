@@ -1,22 +1,45 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
-import os
+from contextlib import asynccontextmanager
+from schemas import ShipmentListResponse, Shipment
+from cache import cache
+from datetime import datetime, timezone
+import json
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events."""
+    # Startup
+    await cache.connect()
+    logger.info("Core service started")
+    yield
+    # Shutdown
+    await cache.disconnect()
+    logger.info("Core service stopped")
+
 
 app = FastAPI(
     title="HarborX Core Service",
-    description="Core business logic service for HarborX platform",
-    version="0.1.0"
+    description="Core Business Logic Service for HarborX platform",
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
-# CORS configuration
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_origins=["*"],  # Configure appropriately for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/health")
 @app.get("/healthz")
@@ -25,32 +48,60 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "harborx-core",
-        "timestamp": datetime.utcnow().isoformat(),
-        "environment": os.getenv("ENVIRONMENT", "development")
+        "version": "1.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "service": "HarborX Core Service",
-        "version": "0.1.0",
-        "status": "running"
-    }
 
-@app.get("/api/v1/status")
-async def api_status():
-    """API status endpoint"""
-    return {
-        "api_version": "v1",
-        "status": "operational",
-        "features": {
-            "operations": "enabled",
-            "analytics": "enabled"
-        }
-    }
+@app.get("/api/v1/shipments", response_model=ShipmentListResponse)
+async def get_shipments():
+    """
+    Get list of shipments (protected endpoint).
+    
+    This endpoint demonstrates Redis caching.
+    TODO: Implement actual database queries and authentication.
+    """
+    cache_key = "shipments:list"
+    
+    # Try to get from cache
+    cached_data = await cache.get(cache_key)
+    if cached_data:
+        logger.info("Returning shipments from cache")
+        data = json.loads(cached_data)
+        return ShipmentListResponse(**data)
+    
+    # Generate stub data (TODO: Replace with actual database query)
+    logger.info("Generating fresh shipments data")
+    shipments = [
+        Shipment(
+            id="ship-001",
+            tracking_number="TRK-2024-001",
+            origin="Dubai, UAE",
+            destination="Jeddah, Saudi Arabia",
+            status="in_transit",
+            created_at=datetime.now(timezone.utc)
+        ),
+        Shipment(
+            id="ship-002",
+            tracking_number="TRK-2024-002",
+            origin="Abu Dhabi, UAE",
+            destination="Riyadh, Saudi Arabia",
+            status="delivered",
+            created_at=datetime.now(timezone.utc)
+        ),
+    ]
+    
+    response = ShipmentListResponse(
+        shipments=shipments,
+        total=len(shipments)
+    )
+    
+    # Cache for 30 seconds
+    await cache.set(cache_key, response.model_dump_json(), expire=30)
+    
+    return response
+
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", "8000"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

@@ -1,4 +1,16 @@
-# Environment Variables - NEVER commit these
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Environment variables
 .env
 .env.local
 .env.*.local
@@ -6,64 +18,57 @@
 .env.development
 *.env
 
-# Dependencies
-node_modules/
-venv/
-env/
-__pycache__/
-*.py[cod]
-*$py.class
-
 # Build outputs
+dist/
+build/
+*.egg-info/
 .next/
 out/
-build/
-dist/
-*.egg-info/
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-pip-log.txt
-
-# Testing
-coverage/
-.coverage
-.pytest_cache/
-.hypothesis/
-
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.hypothesis/
+
+# Database
+*.db
+*.sqlite
+
+# Prisma
+packages/db/node_modules/
+
+# Docker
+*.pid
 
 # Temporary files
 tmp/
 temp/
 *.tmp
 
-# OS files
-Thumbs.db
-.DS_Store
-
 # Python specific
 *.pyc
 *.pyo
 *.pyd
-.Python
 pip-log.txt
 pip-delete-this-directory.txt
 .tox/
 .nox/
-htmlcov/
 
 # Next.js specific
 .vercel

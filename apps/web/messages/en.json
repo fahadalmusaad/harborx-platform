@@ -1,0 +1,19 @@
+{
+  "common": {
+    "title": "HarborX",
+    "welcome": "Welcome to HarborX",
+    "loading": "Loading...",
+    "error": "An error occurred"
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "shipments": "Shipments"
+  },
+  "health": {
+    "title": "System Health",
+    "checking": "Checking system health...",
+    "healthy": "All systems operational",
+    "error": "System health check failed"
+  }
+}
