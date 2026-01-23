@@ -134,7 +134,7 @@ check_content ".gitignore" "node_modules" "Dependencies ignored"
 check_content "SECURITY.md" "stub" "Stub implementation warnings documented"
 
 # Check for common security issues
-if grep -r "password.*=.*['\"].*['\"]" services/ --include="*.py" 2>/dev/null | grep -v "# " | grep -v "password_hash" > /dev/null; then
+if grep -rE "password[[:space:]]*[:=][[:space:]]*['\"][^'\"]*['\"]" services/ --include="*.py" 2>/dev/null | grep -v "# " | grep -v "password_hash" > /dev/null; then
     echo -e "${RED}✗${NC} Hardcoded passwords found in code"
     ((FAILED++))
 else
@@ -142,7 +142,7 @@ else
     ((PASSED++))
 fi
 
-if grep -r "api[_-]key.*=.*['\"]" services/ --include="*.py" 2>/dev/null | grep -v "# " > /dev/null; then
+if grep -rEi "(api[_-]?key|api[_-]?secret)[[:space:]]*[:=][[:space:]]*['\"][^'\"]*['\"]" services/ --include="*.py" 2>/dev/null | grep -v "# " > /dev/null; then
     echo -e "${RED}✗${NC} Potential API keys in code"
     ((FAILED++))
 else

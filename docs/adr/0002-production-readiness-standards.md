@@ -63,7 +63,7 @@ All code must pass automated security checks before merge:
 #### Auth Service (`services/auth`)
 - **Must Have:**
   - Real authentication (replace stub implementation)
-  - JWT with secure secrets (min 64 chars)
+  - JWT with secure secrets (min 256 bits / 32 bytes entropy per NIST SP 800-57)
   - Password hashing (bcrypt/argon2)
   - Account lockout after failed attempts
   - Audit logging for all auth events
